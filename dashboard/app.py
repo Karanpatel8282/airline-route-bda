@@ -2,6 +2,45 @@ import streamlit as st
 import pandas as pd
 from pathlib import Path
 import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
+
+
+# ============================================================
+# GLOBAL PLOTLY THEME (AERONET / blended aviation palette)
+# ============================================================
+
+pio.templates["aeronet"] = go.layout.Template(
+    layout=go.Layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, sans-serif", color="#DCE3F2", size=13),
+        title=dict(font=dict(size=17, color="#F1F4FA", family="Sora, sans-serif")),
+        colorway=[
+            "#22D3EE", "#818CF8", "#A78BFA", "#2DD4BF",
+            "#67E8F9", "#C4B5FD", "#5EEAD4", "#93C5FD"
+        ],
+        xaxis=dict(
+            gridcolor="rgba(129,140,248,0.10)",
+            linecolor="#243252",
+            zerolinecolor="#243252",
+            tickfont=dict(color="#8993AB")
+        ),
+        yaxis=dict(
+            gridcolor="rgba(129,140,248,0.10)",
+            linecolor="#243252",
+            zerolinecolor="#243252",
+            tickfont=dict(color="#8993AB")
+        ),
+        legend=dict(bgcolor="rgba(0,0,0,0)"),
+        margin=dict(t=55, l=10, r=10, b=10),
+        hoverlabel=dict(bgcolor="#0F1523", font_color="#F1F4FA", bordercolor="#243252")
+    )
+)
+
+px.defaults.template = "aeronet"
+
+ACCENT_SCALE = ["#12203A", "#22D3EE", "#818CF8", "#A78BFA"]
 
 
 # ============================================================
@@ -9,7 +48,7 @@ import plotly.express as px
 # ============================================================
 
 st.set_page_config(
-    page_title="ASTRA | Airline Network Intelligence",
+    page_title="AERONET | Global Flight Network Intelligence",
     page_icon="✈",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -38,107 +77,114 @@ st.markdown(
     """
     <style>
 
-    .stApp {
-        background: #071525;
-        color: #F4F8FC;
+    @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+    * {
+        font-family: 'Inter', sans-serif;
     }
 
+    /* ============================================================
+       BASE CANVAS — deep space, blended ambient orbs, faint grid
+       ============================================================ */
+
+    .stApp {
+        background:
+            radial-gradient(circle at 8% 8%,  rgba(34, 211, 238, 0.10), transparent 40%),
+            radial-gradient(circle at 92% 4%, rgba(129, 140, 248, 0.10), transparent 42%),
+            radial-gradient(circle at 50% 100%, rgba(167, 139, 250, 0.08), transparent 48%),
+            radial-gradient(circle at 100% 60%, rgba(45, 212, 191, 0.06), transparent 40%),
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 48px),
+            repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 48px),
+            #05070D;
+        background-attachment: fixed;
+        color: #E8ECF5;
+    }
+
+    h1, h2, h3, .main-title, .sidebar-brand-text, .section-title, .nav-heading {
+        font-family: 'Sora', sans-serif !important;
+    }
+
+    h3 {
+        color: #F1F4FA !important;
+        font-weight: 700 !important;
+        font-size: 18px !important;
+        position: relative;
+        padding-left: 16px;
+        margin-top: 38px !important;
+        margin-bottom: 16px !important;
+        letter-spacing: 0.2px;
+    }
+
+    h3::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 4px; bottom: 4px;
+        width: 3px;
+        border-radius: 3px;
+        background: linear-gradient(180deg, #22D3EE, #818CF8, #A78BFA);
+    }
+
+    /* ============================================================
+       SIDEBAR — glass panel
+       ============================================================ */
+
     [data-testid="stSidebar"] {
-        background: #091B2D;
-        border-right: 1px solid #173653;
+        background: linear-gradient(180deg, rgba(11,13,22,0.97), rgba(7,9,16,0.99));
+        border-right: 1px solid rgba(129,140,248,0.14);
     }
 
     [data-testid="stSidebar"] * {
-        color: #DCEAF7;
+        color: #C9D2E3;
     }
 
     .sidebar-brand {
-        font-size: 28px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 4px 0 2px 0;
+    }
+
+    .sidebar-brand-badge {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        background: linear-gradient(140deg, rgba(34,211,238,0.18), rgba(167,139,250,0.18));
+        border: 1px solid rgba(129,140,248,0.35);
+        box-shadow: 0 0 18px rgba(34,211,238,0.18);
+    }
+
+    .sidebar-brand-text {
+        font-size: 21px;
         font-weight: 800;
-        letter-spacing: 3px;
-        color: #F4F8FC;
+        letter-spacing: 2.5px;
+        background: linear-gradient(90deg, #F1F4FA, #A9D9FF 45%, #C4B5FD);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .sidebar-subtitle {
-        color: #55C7F5;
+        color: #6B7A99;
+        font-size: 9.5px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 2px;
+        margin-bottom: 26px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid rgba(129,140,248,0.14);
+    }
+
+    .nav-heading {
+        color: #57648A;
         font-size: 10px;
         letter-spacing: 2px;
-        margin-top: 4px;
-        margin-bottom: 28px;
-    }
-
-    .main-title {
-        font-size: 42px;
-        font-weight: 800;
-        letter-spacing: 4px;
-        color: #F4F8FC;
-        margin-bottom: 0px;
-    }
-
-    .subtitle {
-        color: #55C7F5;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 2px;
-        margin-top: 5px;
-        margin-bottom: 28px;
-    }
-
-    .kpi-card {
-        background: linear-gradient(145deg, #102A43, #0B1D32);
-        border: 1px solid #1A4564;
-        border-radius: 16px;
-        padding: 20px;
-        min-height: 115px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.22);
-    }
-
-    .kpi-label {
-        color: #8FA9BF;
-        font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
-    }
-
-    .kpi-value {
-        color: #F4F8FC;
-        font-size: 30px;
-        font-weight: 800;
-        margin-top: 7px;
-    }
-
-    .kpi-accent {
-        color: #55C7F5;
-        font-size: 11px;
-        margin-top: 4px;
-    }
-
-    .section-title {
-        font-size: 23px;
+        margin-bottom: 10px;
         font-weight: 700;
-        color: #F4F8FC;
-        margin-top: 20px;
-    }
-
-    .section-caption {
-        color: #8FA9BF;
-        font-size: 13px;
-        margin-bottom: 15px;
-    }
-
-    div[data-testid="stMetric"] {
-        background: #0D243B;
-        border: 1px solid #1A4564;
-        border-radius: 14px;
-        padding: 15px;
-    }
-
-    div[data-testid="stMetricLabel"] {
-        color: #8FA9BF;
-    }
-
-    div[data-testid="stMetricValue"] {
-        color: #F4F8FC;
     }
 
     div[role="radiogroup"] {
@@ -146,48 +192,288 @@ st.markdown(
     }
 
     div[role="radiogroup"] label {
-        background: #0D243B;
-        border-radius: 9px;
-        padding: 7px 10px;
-        border: 1px solid transparent;
+        background: rgba(255,255,255,0.025);
+        border-radius: 10px;
+        padding: 9px 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+        transition: all .18s ease;
     }
 
     div[role="radiogroup"] label:hover {
-        border: 1px solid #26719A;
+        border: 1px solid rgba(34,211,238,0.35);
+        background: rgba(34,211,238,0.05);
+    }
+
+    div[role="radiogroup"] label:has(input:checked) {
+        background: linear-gradient(90deg, rgba(34,211,238,0.14), rgba(167,139,250,0.10));
+        border: 1px solid rgba(34,211,238,0.5) !important;
+        box-shadow: 0 0 16px rgba(34,211,238,0.12);
     }
 
     .status {
-        display: inline-block;
-        padding: 7px 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 13px;
         border-radius: 20px;
-        background: #10364A;
-        color: #65D5F7;
-        font-size: 11px;
+        background: rgba(45,212,191,0.08);
+        border: 1px solid rgba(45,212,191,0.28);
+        color: #5EEAD4;
+        font-size: 10.5px;
         font-weight: 700;
-        letter-spacing: .5px;
+        letter-spacing: 0.6px;
+    }
+
+    .status .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #2DD4BF;
+        box-shadow: 0 0 8px #2DD4BF;
+        animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: .3; }
+    }
+
+    /* ============================================================
+       HERO HEADER
+       ============================================================ */
+
+    .hero-wrap {
+        position: relative;
+        padding: 30px 34px;
+        margin-bottom: 8px;
+        border-radius: 22px;
+        background: linear-gradient(135deg, rgba(34,211,238,0.06), rgba(167,139,250,0.05) 60%, rgba(255,255,255,0.02));
+        backdrop-filter: blur(18px);
+        border: 1px solid rgba(129,140,248,0.16);
+        overflow: hidden;
+    }
+
+    .hero-wrap::before {
+        content: "";
+        position: absolute;
+        top: 68%;
+        left: -6%;
+        width: 112%;
+        border-top: 1px dashed rgba(129,140,248,0.22);
+    }
+
+    .hero-wrap::after {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        top: -130px;
+        right: -80px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(34,211,238,0.16), transparent 70%);
+    }
+
+    .plane-icon {
+        display: inline-block;
+        margin-right: 12px;
+        animation: fly 3.4s ease-in-out infinite;
+        filter: drop-shadow(0 0 10px rgba(34,211,238,0.5));
+    }
+
+    @keyframes fly {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-5px) rotate(-4deg); }
+    }
+
+    .main-title {
+        font-family: 'Sora', sans-serif !important;
+        font-size: 42px !important;
+        font-weight: 800 !important;
+        letter-spacing: 6px !important;
+        background: linear-gradient(90deg, #F1F4FA 10%, #67E8F9 40%, #A5B4FC 70%, #C4B5FD);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        position: relative;
+        z-index: 1;
+        margin-bottom: 2px;
+    }
+
+    .subtitle {
+        color: #8993AB;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 2.2px;
+        text-transform: uppercase;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ============================================================
+       KPI CARDS — glass, gradient edge, icon badge
+       ============================================================ */
+
+    .kpi-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(129,140,248,0.16);
+        border-radius: 18px;
+        padding: 20px 20px 18px 20px;
+        min-height: 118px;
+        box-shadow: 0 10px 28px rgba(0,0,0,0.3);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
+    .kpi-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #22D3EE, #818CF8, #A78BFA);
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 36px rgba(0,0,0,0.4);
+        border-color: rgba(34,211,238,0.4);
+    }
+
+    .kpi-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        font-size: 15px;
+        background: rgba(34,211,238,0.10);
+        border: 1px solid rgba(34,211,238,0.22);
+        margin-bottom: 10px;
+    }
+
+    .kpi-label {
+        color: #8993AB;
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: 1.6px;
+        font-weight: 600;
+    }
+
+    .kpi-value {
+        color: #F1F4FA;
+        font-size: 29px;
+        font-weight: 800;
+        margin-top: 6px;
+        font-family: 'Sora', sans-serif;
+    }
+
+    .kpi-accent {
+        color: #67E8F9;
+        font-size: 11px;
+        margin-top: 5px;
+    }
+
+    /* ============================================================
+       SECTION HEADERS
+       ============================================================ */
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 23px;
+        font-weight: 700;
+        color: #F1F4FA;
+        margin-top: 22px;
+    }
+
+    .section-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(34,211,238,0.5), transparent);
+        margin-left: 10px;
+    }
+
+    .section-caption {
+        color: #7C87A3;
+        font-size: 13px;
+        margin-bottom: 16px;
+    }
+
+    /* ============================================================
+       METRICS, CHARTS, TABLES, ALERTS — unified glass surfaces
+       ============================================================ */
+
+    div[data-testid="stMetric"] {
+        background: linear-gradient(160deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(129,140,248,0.16);
+        border-radius: 16px;
+        padding: 16px;
+        transition: border-color .18s ease;
+    }
+
+    div[data-testid="stMetric"]:hover {
+        border-color: rgba(34,211,238,0.4);
+    }
+
+    div[data-testid="stMetricLabel"] {
+        color: #8993AB;
+    }
+
+    div[data-testid="stMetricValue"] {
+        color: #F1F4FA;
+        font-family: 'Sora', sans-serif;
     }
 
     [data-testid="stDataFrame"] {
-        border: 1px solid #173B57;
-        border-radius: 12px;
+        border: 1px solid rgba(129,140,248,0.16);
+        border-radius: 14px;
         overflow: hidden;
     }
 
     div[data-testid="stAlert"] {
-        background: #0D2942;
-        border: 1px solid #1B4E70;
-        border-radius: 12px;
+        background: rgba(34,211,238,0.06);
+        border: 1px solid rgba(34,211,238,0.22);
+        border-radius: 14px;
     }
 
     hr {
-        border-color: #173653;
+        border-color: rgba(129,140,248,0.14);
     }
 
     div[data-testid="stPlotlyChart"] {
-        background: #0A1B2D;
-        border: 1px solid #153850;
-        border-radius: 14px;
-        padding: 5px;
+        background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008));
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(129,140,248,0.14);
+        border-radius: 16px;
+        padding: 8px;
+        transition: border-color .18s ease;
+    }
+
+    div[data-testid="stPlotlyChart"]:hover {
+        border-color: rgba(34,211,238,0.35);
+    }
+
+    /* Sliders / selects / tabs picking up the accent family */
+    div[data-testid="stSlider"] [role="slider"] {
+        background-color: #22D3EE !important;
+        box-shadow: 0 0 10px rgba(34,211,238,0.6) !important;
+    }
+
+    div[data-baseweb="tab-list"] {
+        gap: 4px;
+    }
+
+    button[data-baseweb="tab"] {
+        border-radius: 10px 10px 0 0 !important;
+    }
+
+    button[aria-selected="true"] {
+        color: #67E8F9 !important;
     }
 
     ::-webkit-scrollbar {
@@ -195,11 +481,11 @@ st.markdown(
     }
 
     ::-webkit-scrollbar-track {
-        background: #071525;
+        background: #05070D;
     }
 
     ::-webkit-scrollbar-thumb {
-        background: #214A66;
+        background: linear-gradient(180deg, #22D3EE, #818CF8);
         border-radius: 10px;
     }
 
@@ -373,30 +659,47 @@ else:
 with st.sidebar:
 
     st.markdown(
-        '<div class="sidebar-brand">ASTRA</div>',
+        """
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-badge">✈️</div>
+            <div class="sidebar-brand-text">AERONET</div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
     st.markdown(
-        '<div class="sidebar-subtitle">AIRLINE NETWORK INTELLIGENCE</div>',
+        '<div class="sidebar-subtitle">GLOBAL FLIGHT NETWORK INTELLIGENCE</div>',
         unsafe_allow_html=True
     )
+
+    st.markdown('<div class="nav-heading">Navigate</div>', unsafe_allow_html=True)
+
+    nav_icons = {
+        "Command Deck": "🛰️",
+        "Flight Paths": "🛫",
+        "Terminal Map": "🗺️",
+        "Carrier Fleet": "✈️",
+        "Network Core": "🕸️"
+    }
 
     page = st.radio(
         "Navigation",
         [
-            "Overview",
-            "Route Analysis",
-            "Airport & Geography",
-            "Airline Analysis",
-            "Graph Analytics"
-        ]
+            "Command Deck",
+            "Flight Paths",
+            "Terminal Map",
+            "Carrier Fleet",
+            "Network Core"
+        ],
+        format_func=lambda option: f"{nav_icons.get(option, '')}  {option}",
+        label_visibility="collapsed"
     )
 
     st.markdown("---")
 
     st.markdown(
-        '<div class="status">DATA SYSTEM ONLINE</div>',
+        '<div class="status"><span class="dot"></span>DATA SYSTEM ONLINE</div>',
         unsafe_allow_html=True
     )
 
@@ -409,12 +712,12 @@ with st.sidebar:
 # ============================================================
 
 st.markdown(
-    '<div class="main-title">ASTRA</div>',
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    '<div class="subtitle">AIRLINE ROUTE NETWORK & AIRPORT CONNECTIVITY ANALYTICS</div>',
+    """
+    <div class="hero-wrap">
+        <div class="main-title"><span class="plane-icon">✈️</span>AERONET</div>
+        <div class="subtitle">Mapping the World's Airline Route Network, Hub by Hub</div>
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
@@ -430,6 +733,7 @@ with kpi1:
     st.markdown(
         f"""
         <div class="kpi-card">
+            <div class="kpi-icon">🛫</div>
             <div class="kpi-label">Total Routes</div>
             <div class="kpi-value">{total_routes:,}</div>
             <div class="kpi-accent">Airline route records</div>
@@ -444,6 +748,7 @@ with kpi2:
     st.markdown(
         f"""
         <div class="kpi-card">
+            <div class="kpi-icon">🏢</div>
             <div class="kpi-label">Airports</div>
             <div class="kpi-value">{total_airports:,}</div>
             <div class="kpi-accent">Global airport network</div>
@@ -458,6 +763,7 @@ with kpi3:
     st.markdown(
         f"""
         <div class="kpi-card">
+            <div class="kpi-icon">✈️</div>
             <div class="kpi-label">Airlines</div>
             <div class="kpi-value">{total_airlines:,}</div>
             <div class="kpi-accent">Airline records</div>
@@ -472,6 +778,7 @@ with kpi4:
     st.markdown(
         f"""
         <div class="kpi-card">
+            <div class="kpi-icon">🔗</div>
             <div class="kpi-label">Connections</div>
             <div class="kpi-value">{connections:,}</div>
             <div class="kpi-accent">Unique airport pairs</div>
@@ -485,7 +792,7 @@ with kpi4:
 # OVERVIEW
 # ============================================================
 
-if page == "Overview":
+if page == "Command Deck":
 
     st.markdown(
         '<div class="section-title">Network Intelligence Center</div>',
@@ -562,22 +869,32 @@ if page == "Overview":
                 .head(10)
             )
 
+            overview_airlines = overview_airlines.sort_values(
+                "total_routes",
+                ascending=True
+            )
+
             fig = px.bar(
                 overview_airlines,
-                x="airline",
-                y="total_routes",
+                x="total_routes",
+                y="airline",
+                orientation="h",
                 title="Top 10 Airlines by Total Routes",
-                text="total_routes"
+                text="total_routes",
+                color="total_routes",
+                color_continuous_scale=ACCENT_SCALE
             )
 
             fig.update_traces(
-                textposition="outside"
+                textposition="outside",
+                marker_line_width=0
             )
 
             fig.update_layout(
-                xaxis_title="Airline",
-                yaxis_title="Total Routes",
-                height=450
+                xaxis_title="Total Routes",
+                yaxis_title="",
+                height=450,
+                coloraxis_showscale=False
             )
 
             st.plotly_chart(
@@ -636,22 +953,25 @@ if page == "Overview":
                 .head(10)
             )
 
-            fig = px.bar(
+            fig = px.treemap(
                 overview_airports,
-                x="airport",
-                y="total_connectivity",
-                title="Top 10 Airports by Connectivity",
-                text="total_connectivity"
+                path=[px.Constant("All Hubs"), "airport"],
+                values="total_connectivity",
+                title="Top 10 Airport Hubs by Connectivity",
+                color="total_connectivity",
+                color_continuous_scale=ACCENT_SCALE
             )
 
             fig.update_traces(
-                textposition="outside"
+                textinfo="label+value",
+                marker_line_width=0.5,
+                marker_line_color="#05070D"
             )
 
             fig.update_layout(
-                xaxis_title="Airport",
-                yaxis_title="Total Connectivity",
-                height=450
+                height=450,
+                coloraxis_showscale=False,
+                margin=dict(t=55, l=6, r=6, b=6)
             )
 
             st.plotly_chart(
@@ -735,22 +1055,28 @@ if page == "Overview":
 
         if not destination_counts.empty:
 
-            fig = px.bar(
+            destination_counts = destination_counts.sort_values(
+                "Incoming Routes",
+                ascending=False
+            )
+
+            fig = px.funnel(
                 destination_counts,
-                x="Destination Airport",
-                y="Incoming Routes",
-                title="Top 10 Airports by Incoming Routes",
-                text="Incoming Routes"
+                x="Incoming Routes",
+                y="Destination Airport",
+                title="Top 10 Airports by Incoming Routes"
             )
 
             fig.update_traces(
-                textposition="outside"
+                marker_color=[
+                    "#22D3EE", "#3BD4EA", "#54D5E5", "#6DA9EE",
+                    "#818CF8", "#968FF3", "#A78BFA", "#B49CF9",
+                    "#C4B5FD", "#D4C7FE"
+                ][:len(destination_counts)]
             )
 
             fig.update_layout(
-                height=450,
-                xaxis_title="Destination Airport",
-                yaxis_title="Incoming Routes"
+                height=450
             )
 
             st.plotly_chart(
@@ -778,10 +1104,10 @@ if page == "Overview":
 # ROUTE ANALYSIS
 # ============================================================
 
-elif page == "Route Analysis":
+elif page == "Flight Paths":
 
     st.markdown(
-        '<div class="section-title">Route Analysis</div>',
+        '<div class="section-title">Flight Paths</div>',
         unsafe_allow_html=True
     )
 
@@ -903,25 +1229,58 @@ elif page == "Route Analysis":
                 subset=["total_routes"]
             )
 
+            airline_n = st.slider(
+                "Airlines to display",
+                min_value=5,
+                max_value=30,
+                value=15,
+                step=1,
+                key="flight_paths_airline_n"
+            )
+
             chart_df = (
                 chart_df
                 .sort_values(
                     "total_routes",
                     ascending=False
                 )
-                .head(15)
+                .head(airline_n)
+                .sort_values("total_routes", ascending=True)
             )
 
-            fig = px.bar(
-                chart_df,
-                x="airline",
-                y="total_routes",
-                title="Top Airlines by Total Routes"
+            fig = go.Figure()
+
+            for _, row in chart_df.iterrows():
+                fig.add_shape(
+                    type="line",
+                    x0=0, x1=row["total_routes"],
+                    y0=row["airline"], y1=row["airline"],
+                    line=dict(color="rgba(129,140,248,0.35)", width=2)
+                )
+
+            fig.add_trace(
+                go.Scatter(
+                    x=chart_df["total_routes"],
+                    y=chart_df["airline"],
+                    mode="markers+text",
+                    text=chart_df["total_routes"],
+                    textposition="middle right",
+                    textfont=dict(size=11, color="#8993AB"),
+                    marker=dict(
+                        size=12,
+                        color=chart_df["total_routes"],
+                        colorscale=[[0, "#22D3EE"], [1, "#A78BFA"]],
+                        line=dict(width=1, color="#05070D")
+                    ),
+                    showlegend=False
+                )
             )
 
             fig.update_layout(
-                xaxis_title="Airline",
-                yaxis_title="Total Routes"
+                title="Carrier Route Volume",
+                xaxis_title="Total Routes",
+                yaxis_title="",
+                height=max(420, airline_n * 26)
             )
 
             st.plotly_chart(
@@ -963,16 +1322,23 @@ elif page == "Route Analysis":
                 .head(15)
             )
 
-            fig = px.bar(
+            fig = px.bar_polar(
                 chart_df,
-                x="airport",
-                y="total_connectivity",
-                title="Top Airports by Connectivity"
+                r="total_connectivity",
+                theta="airport",
+                title="Connectivity Radar",
+                color="total_connectivity",
+                color_continuous_scale=ACCENT_SCALE
             )
 
             fig.update_layout(
-                xaxis_title="Airport",
-                yaxis_title="Total Connectivity"
+                height=520,
+                coloraxis_showscale=False,
+                polar=dict(
+                    bgcolor="rgba(0,0,0,0)",
+                    radialaxis=dict(gridcolor="rgba(129,140,248,0.14)", color="#8993AB"),
+                    angularaxis=dict(gridcolor="rgba(129,140,248,0.14)", color="#C9D2E3")
+                )
             )
 
             st.plotly_chart(
@@ -999,10 +1365,10 @@ elif page == "Route Analysis":
 # AIRPORT & GEOGRAPHY
 # ============================================================
 
-elif page == "Airport & Geography":
+elif page == "Terminal Map":
 
     st.markdown(
-        '<div class="section-title">Airport & Geography</div>',
+        '<div class="section-title">Terminal Map</div>',
         unsafe_allow_html=True
     )
 
@@ -1102,16 +1468,30 @@ elif page == "Airport & Geography":
                 .head(15)
             )
 
-            fig = px.bar(
+            chart_df = chart_df.reset_index(drop=True)
+            chart_df["rank"] = chart_df.index + 1
+
+            fig = px.scatter(
                 chart_df,
-                x="airport",
+                x="rank",
                 y="total_connectivity",
-                title="Top 15 Airports by Connectivity"
+                size="total_connectivity",
+                color="total_connectivity",
+                hover_name="airport",
+                title="Top 15 Airports by Connectivity",
+                color_continuous_scale=ACCENT_SCALE,
+                size_max=48
+            )
+
+            fig.update_traces(
+                marker=dict(line=dict(width=1, color="#05070D"))
             )
 
             fig.update_layout(
-                xaxis_title="Airport",
-                yaxis_title="Total Connectivity"
+                xaxis_title="Rank",
+                yaxis_title="Total Connectivity",
+                coloraxis_showscale=False,
+                height=460
             )
 
             st.plotly_chart(
@@ -1161,12 +1541,32 @@ elif page == "Airport & Geography":
                     "city",
                     "country"
                 ],
-                title="Global Airport Distribution"
+                title="Global Airport Constellation"
+            )
+
+            fig.update_traces(
+                marker=dict(
+                    size=4,
+                    color="#22D3EE",
+                    opacity=0.75,
+                    line=dict(width=0)
+                )
             )
 
             fig.update_layout(
+                height=520,
                 geo=dict(
-                    showland=True
+                    projection_type="orthographic",
+                    showland=True,
+                    landcolor="#0F1523",
+                    showocean=True,
+                    oceancolor="#05070D",
+                    showcountries=True,
+                    countrycolor="rgba(129,140,248,0.25)",
+                    showcoastlines=True,
+                    coastlinecolor="rgba(129,140,248,0.3)",
+                    bgcolor="rgba(0,0,0,0)",
+                    lakecolor="#05070D"
                 )
             )
 
@@ -1194,10 +1594,10 @@ elif page == "Airport & Geography":
 # AIRLINE ANALYSIS
 # ============================================================
 
-elif page == "Airline Analysis":
+elif page == "Carrier Fleet":
 
     st.markdown(
-        '<div class="section-title">Airline Analysis</div>',
+        '<div class="section-title">Carrier Fleet</div>',
         unsafe_allow_html=True
     )
 
@@ -1325,16 +1725,38 @@ elif page == "Airline Analysis":
                 .head(15)
             )
 
-            fig = px.bar(
-                chart_df,
-                x="airline",
-                y="total_routes",
-                title="Top 15 Airlines by Total Routes"
+            chart_df = chart_df.sort_values("total_routes", ascending=False)
+
+            fig = go.Figure()
+
+            fig.add_trace(
+                go.Scatter(
+                    x=chart_df["airline"],
+                    y=chart_df["total_routes"],
+                    mode="markers",
+                    marker=dict(
+                        size=14,
+                        color=chart_df["total_routes"],
+                        colorscale=[[0, "#22D3EE"], [0.5, "#818CF8"], [1, "#A78BFA"]],
+                        line=dict(width=1, color="#05070D")
+                    ),
+                    showlegend=False
+                )
             )
 
+            for _, row in chart_df.iterrows():
+                fig.add_shape(
+                    type="line",
+                    x0=row["airline"], x1=row["airline"],
+                    y0=0, y1=row["total_routes"],
+                    line=dict(color="rgba(129,140,248,0.25)", width=1.5)
+                )
+
             fig.update_layout(
+                title="Top 15 Airlines by Total Routes",
                 xaxis_title="Airline",
-                yaxis_title="Total Routes"
+                yaxis_title="Total Routes",
+                height=460
             )
 
             st.plotly_chart(
@@ -1361,10 +1783,10 @@ elif page == "Airline Analysis":
 # GRAPH ANALYTICS
 # ============================================================
 
-elif page == "Graph Analytics":
+elif page == "Network Core":
 
     st.markdown(
-        '<div class="section-title">Graph Analytics</div>',
+        '<div class="section-title">Network Core</div>',
         unsafe_allow_html=True
     )
 
@@ -1441,16 +1863,23 @@ elif page == "Graph Analytics":
                 else "airport_name"
             )
 
+            chart_df = chart_df.sort_values("pagerank", ascending=True)
+
             fig = px.bar(
                 chart_df,
-                x=x_column,
-                y="pagerank",
-                title="Top Airports by PageRank"
+                x="pagerank",
+                y=x_column,
+                orientation="h",
+                title="Hub Influence Ranking (PageRank)",
+                color="pagerank",
+                color_continuous_scale=ACCENT_SCALE
             )
 
             fig.update_layout(
-                xaxis_title="Airport",
-                yaxis_title="PageRank Score"
+                xaxis_title="PageRank Score",
+                yaxis_title="",
+                coloraxis_showscale=False,
+                height=420
             )
 
             st.plotly_chart(
@@ -1514,16 +1943,30 @@ elif page == "Graph Analytics":
                 else "airport_name"
             )
 
-            fig = px.bar(
+            chart_df = chart_df.reset_index(drop=True)
+            chart_df["rank"] = chart_df.index + 1
+
+            fig = px.scatter(
                 chart_df,
-                x=x_column,
+                x="rank",
                 y=degree_column,
-                title="Top Airports by Degree Centrality"
+                size=degree_column,
+                color=degree_column,
+                hover_name=x_column,
+                title="Degree Centrality — Connection Density",
+                color_continuous_scale=ACCENT_SCALE,
+                size_max=44
+            )
+
+            fig.update_traces(
+                marker=dict(line=dict(width=1, color="#05070D"))
             )
 
             fig.update_layout(
-                xaxis_title="Airport",
-                yaxis_title="Degree"
+                xaxis_title="Rank",
+                yaxis_title="Degree",
+                coloraxis_showscale=False,
+                height=420
             )
 
             st.plotly_chart(
@@ -1573,16 +2016,28 @@ elif page == "Graph Analytics":
                 else "airport_name"
             )
 
-            fig = px.bar(
-                chart_df,
-                x=x_column,
-                y="betweenness",
-                title="Top Airports by Betweenness Centrality"
+            chart_df = chart_df.sort_values("betweenness", ascending=False)
+
+            fig = go.Figure()
+
+            fig.add_trace(
+                go.Scatter(
+                    x=chart_df[x_column],
+                    y=chart_df["betweenness"],
+                    mode="lines+markers",
+                    fill="tozeroy",
+                    fillcolor="rgba(167,139,250,0.10)",
+                    line=dict(color="#A78BFA", width=2),
+                    marker=dict(size=9, color="#22D3EE", line=dict(width=1, color="#05070D")),
+                    showlegend=False
+                )
             )
 
             fig.update_layout(
+                title="Betweenness — Bridge Airports",
                 xaxis_title="Airport",
-                yaxis_title="Betweenness Score"
+                yaxis_title="Betweenness Score",
+                height=420
             )
 
             st.plotly_chart(

@@ -1,0 +1,9 @@
+pyspark
+pandas
+numpy
+scikit-learn
+neo4j
+streamlit
+matplotlib
+plotly
+python-dotenv

@@ -1,0 +1,48 @@
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python caches and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment and secret configuration files
+.env
+**/.env
+.env.*
+**/.env.*
+
+# Hadoop local/runtime files
+hdfs/
+.hadoop/
+.hadoop_history/
+*.out
+*.pid
+
+# Neo4j local database/runtime files
+neo4j/data/
+neo4j/logs/
+neo4j/run/
+neo4j/import/
+neo4j/plugins/
+neo4j/conf/
+data/neo4j/
+data/databases/
+data/transactions/
+*.neostore.*
+
+# Spark temporary and generated metadata
+.sparkStaging/
+.spark-warehouse/
+checkpoint/
+checkpoints/
+**/checkpoint/
+**/checkpoints/
+_SUCCESS
+**/_SUCCESS
+.part-*
+**/.part-*
+*.crc
+**/*.crc
